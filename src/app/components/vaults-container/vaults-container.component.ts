@@ -1,0 +1,70 @@
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { Web3Service } from 'src/lib/services/web3.service';
+import { trigger, transition, useAnimation } from '@angular/animations';
+import { fadeIn } from 'ng-animate';
+import { VaultService } from 'src/lib/services/vault.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { DataWatchService } from 'src/lib/services/data-watch.service';
+
+@Component({
+  selector: 'ames-vaults-container',
+  templateUrl: './vaults-container.component.html',
+  styleUrls: ['./vaults-container.component.scss'],
+  animations: [trigger('fadeIn', [transition('* => *', useAnimation(fadeIn))])],
+})
+export class VaultsContainerComponent implements OnDestroy {
+  fadeIn: any;
+  private _subs = new Subscription();
+  private _dataWatchInterval = 1000 * 60 * 3;
+  loadingVaults = true;
+  vaults = [];
+
+  constructor(
+    private readonly web3: Web3Service,
+    public readonly vaultService: VaultService,
+    private readonly snackBar: MatSnackBar,
+    private readonly watcher: DataWatchService
+  ) {
+    this.web3.web3.subscribe((web3Info) => {
+      if (web3Info) {
+        this.vaultService.initVaults(web3Info.chainId);
+        this.watcher.watchVaults(
+          this._dataWatchInterval,
+          this.web3.web3Info.chainId
+        );
+      } else {
+        this.watcher.stopWatchingVaults();
+      }
+    });
+
+    const s1 = this.vaultService.error.subscribe((err) => {
+      this.snackBar.dismiss();
+      this.snackBar.open(err.message, '', {
+        duration: 1000 * 5,
+      });
+    });
+
+    const s2 = this.vaultService.operationActive.subscribe((msg) => {
+      this.snackBar.dismiss();
+      if (msg) {
+        this.snackBar.open(msg, '', {
+          duration: 1000 * 5,
+        });
+      }
+    });
+
+    const s3 = this.vaultService.init.subscribe((init) => {
+      this.loadingVaults = init;
+    });
+
+    this._subs.add(s1);
+    this._subs.add(s2);
+    this._subs.add(s3);
+  }
+
+  ngOnDestroy(): void {
+    this._subs.unsubscribe();
+    this.watcher.stopWatchingVaults();
+  }
+}

@@ -1,10 +1,29 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
+import { VaultsContainerComponent } from './components/vaults-container/vaults-container.component';
+// import { ZapContainerComponent } from './components/zap-container/zap-container.component';
 
-const routes: Routes = [];
+const routes: Routes = [
+  {
+    path: 'vaults',
+    component: VaultsContainerComponent,
+  },
+  // {
+  //   path: 'zaps',
+  //   component: ZapContainerComponent,
+  // },
+  // {
+  //   path: 'swap',
+  //   component: SwapContainerComponent,
+  // },
+  {
+    path: '**',
+    redirectTo: 'vaults',
+  },
+];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}
