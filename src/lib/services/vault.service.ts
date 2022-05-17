@@ -83,7 +83,6 @@ export class VaultService {
         vaultRef.userLpDepositBalanceBN = userLpDepositBalanceBN;
 
         await this._setVaultAllowance(vaultRef);
-        console.log(vaultRef);
         vaults.push(vaultRef);
       }
 
